@@ -1,12 +1,12 @@
 from dungeonbuild import *
 dungeon = build_dungeon()
 
-here = dungeon.map[1]
+here = dungeon.map[(1,2)]
 #here = Room(1)
 
 while True:
     try:
-
+        dungeon.show_map()
         dungeon.here.show_exits()
         dungeon.here.show()
         print()
