@@ -159,7 +159,8 @@ class Dungeon(object):
     #     5: Room(5, {'north': 3}),
     # }
 
-    map = {
+    map = {  # This is the current construction of the dungeon map.
+             # TODO: Move to __init__ and keep as an instance variable to allow multiple floors
         (1, 2): Room(1),
         (0, 1): Room(2),
         (1, 1): Room(3),
@@ -177,14 +178,45 @@ class Dungeon(object):
         (5, 6): Room(15),
         (5, 7): Room(16),
         (5, 8): Room(17),
+        }
+    #
+    #
+    # commandlist = { # Dictionary of first words of commands for directing the command parser to the proper function
+    #     'take': self.take,
+    #     'n': self.move,
+    #     's': self.move,
+    #     'w': self.move,
+    #     'e': self.move
+    #         }
 
-    }
+
 
     def __init__(self):
         # Starting location
         self.location = (1, 2)
         self.here = self.map[self.location]
         self.here.contents['player'] = Player()
+
+        self.commandlist = {  # Dictionary of first words of commands for directing the command parser to the proper function
+            'take': self.take,
+            'n': self.move,
+            's': self.move,
+            'w': self.move,
+            'e': self.move
+            'make': self.make
+
+                 }
+
+        self.directions = {  # Mapping of cardinal directions for move function
+            'n': ('north', 0, 1),
+            's': ('south', 0, -1),
+            'w': ('west', -1, 0),
+            'e': ('east', 1, -0),
+            'north': ('north', 0, 1),
+            'south': ('south', 0, -1),
+            'west': ('west', -1, 0),
+            'east': ('east', 1, 0),
+                }
 
     def show_map(self):
         for i in reversed(range(0, 32)):
@@ -199,19 +231,19 @@ class Dungeon(object):
                     mapline += "#"
             print(mapline)
 
-    def moves(self): # TODO: Reconstruct move functions based on updated command parser
-
+    def move(self, command): # TODO: Reconstruct move functions based on updated command parser
+        movement = self.directions[command[0]]
         try:
-            self.map[(self.location[0], self.location[1] - 1)].contents['player'] = self.here.contents['player']
+            self.map[(self.location[0] + movement[1], self.location[1] + movement[2])].contents['player'] = self.here.contents['player']
             del self.here.contents['player']
-            self.here = self.map[(self.location[0], self.location[1] - 1)]
-            self.location = (self.location[0], self.location[1] - 1)
-            return "You move south"
-        except IndexError:
+            self.here = self.map[(self.location[0] + movement[1], self.location[1] + movement[2])]
+            self.location = (self.location[0] + movement[1], self.location[1] + movement[2])
+            return "You move {}".format(movement[0])
 
-            print(self.location)
-            print("There is no exit in that direction")
-            return
+
+        except KeyError:
+            return "There is no exit in that direction"
+
 
 
     # def move(self, direction):
@@ -285,22 +317,22 @@ class Dungeon(object):
 
     def command(self, answer): # TODO: Parse the input and make separate dicts for one word and two word commands
 
-        try:
-            first_pick, second_pick = answer.lower().split()
-        except ValueError:
-            first_pick = answer.lower().split()
+                # TODO: Idea: Make wrapper functions for single word commands that point to a dict in a TypeError to eliminate the need to check for words in any two word occurence
+
         answer = answer.lower().split()
-        self.move('north')
+        return self.commandlist[answer[0]](answer)
 
 
-        directions = {
-            'take': self.take,
-            'n': (self.move, 'north'),
-            's': self.move('south'),
-            'w': self.move('west'),
-            'e': self.move('east')
-            }
 
+
+        # commandlist = {
+        #     'take': self.take,
+        #     'n': (self.move, 'north'),
+        #     's': self.move('south'),
+        #     'w': self.move('west'),
+        #     'e': self.move('east')
+        #     }
+        #
 
 
 
@@ -313,12 +345,10 @@ class Dungeon(object):
 #     return self.move('east')
 
 
-name = directions[answer[0]]()
-return name(answer[1])
 
 
 #
-# if first_pick == "make":
+# if first_pick == "make": TODO: Add to new parser, merge make functions
 #     if answer[1] == 'potion':
 #         return self.here.add_potion('potion', 20)
 #     if answer[1] == 'weapon':
@@ -328,10 +358,10 @@ return name(answer[1])
 # if first_pick == 'attack':
 #     self.attack(answer[1])
 #
-# if first_pick == "inv":
+# if first_pick == "inv": TODO: Add to new parser
 #     return self.here.contents['player'].show_inv()
 #
-# if first_pick == "take":
+# if first_pick == "take": TODO: Add to new parser
 #     return self.take(answer[1])
 
 # try:
