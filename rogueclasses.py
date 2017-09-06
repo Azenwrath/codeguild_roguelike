@@ -203,7 +203,7 @@ class Dungeon(object):
             's': self.move,
             'w': self.move,
             'e': self.move
-            'make': self.make
+      #      'make': self.make
 
                  }
 
